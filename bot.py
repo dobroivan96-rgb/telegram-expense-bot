@@ -1,3 +1,4 @@
+import os
 import logging
 import re
 import sqlite3
@@ -16,7 +17,7 @@ from telegram.ext import (
 # ==============================
 # CONFIG
 # ==============================
-BOT_TOKEN = "8616838009:AAEb0LBQp9EwIPra47bB1m2HtOQ_9-8WspU"
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 DB_PATH = "expenses.db"
 TIMEZONE = "Europe/Kyiv"
 
@@ -223,11 +224,13 @@ def format_amount(amount: float) -> str:
     return f"{amount:.2f}"
 
 
+
 def get_today_range() -> tuple[str, str]:
     now = datetime.now(ZoneInfo(TIMEZONE))
     start = now.replace(hour=0, minute=0, second=0, microsecond=0)
     end = start + timedelta(days=1)
     return start.isoformat(), end.isoformat()
+
 
 
 def get_month_range() -> tuple[str, str]:
@@ -240,6 +243,7 @@ def get_month_range() -> tuple[str, str]:
     return start.isoformat(), end.isoformat()
 
 
+
 def main_keyboard() -> ReplyKeyboardMarkup:
     return ReplyKeyboardMarkup(
         [
@@ -249,6 +253,7 @@ def main_keyboard() -> ReplyKeyboardMarkup:
         ],
         resize_keyboard=True,
     )
+
 
 
 def build_expense_line(category: str, amount: float, comment: str | None = None) -> str:
@@ -406,8 +411,8 @@ async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE) -> Non
 def main() -> None:
     init_db()
 
-    if BOT_TOKEN == "PASTE_YOUR_BOT_TOKEN_HERE":
-        raise ValueError("Вставь BOT_TOKEN перед запуском.")
+    if not BOT_TOKEN:
+        raise ValueError("Не найден BOT_TOKEN в переменных окружения.")
 
     app = ApplicationBuilder().token(BOT_TOKEN).build()
 
